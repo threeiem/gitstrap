@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+VERSION_DEFAULT="2.25.2"
+PATH_ROOT="/opt/git"
+
+if [[ "${1}" =~ ^[0-9]*[.][0-9]*[.][0-9]*$ ]]
+then
+  VERSION="${1}" 
+else
+  VERSION="${VERSION_DEFAULT}"
+fi
+
+
+PATH_TARGET="${PATH_ROOT}/git-${VERSION}"
+PATH_WORK="${PATH_ROOT}/tmp-git-${VERSION}"
+
+# Clean out other version
+if [ -d ${PATH_ROOT} ]
+then
+  rm -rf ${PATH_ROOT} || { exit 1; }
+fi
+
+mkdir -p ${PATH_ROOT} || { exit 2; }
+chmod 0755 ${PATH_ROOT} || { exit 3; }
+
+cd ${PATH_ROOT}
+wget "https://mirrors.edge.kernel.org/pub/software/scm/git/git-${VERSION}.tar.gz" #1> /dev/null
+tar -xzvf "git-${VERSION}.tar.gz" #1> /dev/null
+yum install -y curl-devel expat-devel &> /dev/null
+rm "git-${VERSION}.tar.gz" #1> /dev/null
+mv "${PATH_TARGET}" "${PATH_WORK}"
+cd ${PATH_WORK} 
+./configure --prefix=${PATH_ROOT} #1> /dev/null
+make all install #1> /dev/null
+cd $PATH_ROOT
+rm -rf $PATH_WORK
+rm -rf $PATH_TARGET
+echo ""
+echo "**********************************************************************************"
+echo " NOTICE: Add $PATH_ROOT/bin to ${PATH}"
+echo "**********************************************************************************"
+echo
+$PATH_ROOT/bin/git --version
